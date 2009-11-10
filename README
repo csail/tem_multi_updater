@@ -1,0 +1,5 @@
+tem_multi_updater is a tool that installs or updates the TEM firmware on all the
+smartcards connected to a tem_multi_proxy server.
+
+The tool was written to simplify the maintainance of proof-of-concept
+Map-Reduce TEM clusters.
