@@ -19,6 +19,8 @@ Echoe.new('tem_multi_updater') do |p|
   p.dependencies = ['smartcard >=0.4.7',
                     'tem_multi_proxy >=0.2.5',
                     'tem_ruby >=0.12.0']
+  p.development_dependencies = ['echoe >=3.2',
+                                'flexmock >=0.8.6']
   
   p.need_tar_gz = !Gem.win_platform?
   p.need_zip = !Gem.win_platform?

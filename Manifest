@@ -6,3 +6,5 @@ Rakefile
 bin/tem_multi_update_fw
 lib/tem_multi_updater.rb
 lib/tem_multi_updater/updater.rb
+test/integration_test.rb
+test/updater_test.rb

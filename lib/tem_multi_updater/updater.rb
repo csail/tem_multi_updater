@@ -29,11 +29,16 @@ class Updater
   def run
     return unless @pending.nil?
     
-    @logger.info "Querying #{@server_addr}"
+    @logger.info "Querying tem_multi_proxy at #{@server_addr}"
     @transport_configs = Tem::MultiProxy::Client.query_tems @server_addr
+    if @transport_configs.nil? || @transport_configs.empty?
+      @logger.error "No response from tem_multi_proxy at #{@server_addr}"
+      return false
+    end
     
     spawn_threads
     wait_for_threads
+    return true
   end
 
   # Spawns one updating thread for each smart-card transport configuration.
@@ -61,40 +66,57 @@ class Updater
   # Args:
   #   transport_config:: configuration for the TEM's smart-card transport 
   def update_thread(transport_config)
-    transport = Smartcard::Iso::AutoConfigurator.try_transport transport_config
-    if transport
-      @logger.info "Connected to #{transport.inspect}"
-      update_transport transport
-    else
-      @logger.warn "Failed connecting to #{transport_config.inspect}"
+    begin
+      transport = transport_for_config transport_config
+      if transport
+        @logger.info "Connected to #{transport.inspect}"
+        update_transport transport
+        transport.disconnect
+      else
+        @logger.warn "Failed connecting to #{transport_config.inspect}"
+      end
+    ensure    
+      @pending_mx.synchronize do
+        @pending -= 1
+        @pending_cv.signal
+      end
     end
-    
-    @pending_mx.synchronize do
-      @pending -= 1
-      @pending_cv.signal
-    end
+  end
+  
+  # Creates a ISO smart-card transport out of a configuration.
+  #
+  # Args:
+  #   transport_config:: configuration for the TEM's smart-card transport
+  #
+  # Returns a transport.
+  def transport_for_config(transport_config)
+    Smartcard::Iso::AutoConfigurator.try_transport transport_config    
   end
   
   # Installs or updates TEM firmware on a smart-card.
   # 
+  # No firmware will be uploaded if the smart-card already has the latest
+  # version of the TEM software.
+  #
   # Args:
   #   transport_config:: smart-card transport connecting to the TEM card
   #
-  # No firmware will be uploaded if the smart-card already has the latest
-  # version of the TEM software.
+  # Returns 
   def update_transport(transport)
     if !needs_update? transport
       @logger.info "No update needed at #{transport.inspect}"
-      return
+      return false
     end
     
     @logger.info "Uploading TEM firmware to #{transport.inspect}"
     begin
       Tem::Firmware::Uploader.upload_cap transport
+      return true
     rescue Exception => e
       @logger.error "Error while uploading TEM firmware to " +
                     "#{transport.inspect} - #{e.class.name}: #{e.message}"
       @logger.info e.backtrace.join("\n")
+      return false
     end
   end
 
