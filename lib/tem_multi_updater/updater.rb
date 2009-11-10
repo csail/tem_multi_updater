@@ -18,9 +18,10 @@ class Updater
   #   logger:: receives update progress notifications
   #   multiproxy_server_addr:: the address (host or host:port) of the
   #                            tem_multi_proxy RPC port
-  def initialize(logger, multiproxy_server_addr)
+  def initialize(logger, multiproxy_server_addr, options = {})
     @logger = logger
     @server_addr = multiproxy_server_addr
+    @options = options
     @pending = nil
     @pending_mx, @pending_cv = Mutex.new, ConditionVariable.new
   end
@@ -124,7 +125,9 @@ class Updater
   #
   # Args:
   #   transport_config:: smart-card transport connecting to the TEM card 
-  def needs_update?(transport)    
+  def needs_update?(transport)
+    return true if @options[:force]
+    
     begin
       tem = Tem::Session.new transport
       tem_version = tem.fw_version

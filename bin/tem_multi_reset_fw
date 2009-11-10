@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+#
+# Launcher for the multi-updater code with forced updating.
+#
+# Author:: Victor Costan
+# Copyright:: Copyright (C) 2009 Massachusetts Institute of Technology
+# License:: MIT
+#
+# Usage: tem_multi_reset_fw [host[:port]]
+# The host:port should point to the RPC port of the tem_multi_proxy server.
+# The default host is localhost, and the default port is 9000.
+
+require 'logger'
+require 'rubygems'
+require 'tem_multi_proxy'
+require 'tem_multi_updater'
+
+server_addr = ARGV[0] || 'localhost'
+logger = Logger.new STDERR
+logger.level = Logger::INFO
+updater = Tem::MultiUpdater::Updater.new logger, server_addr, :force => true
+updater.run

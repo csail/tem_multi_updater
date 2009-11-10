@@ -3,6 +3,7 @@ LICENSE
 Manifest
 README
 Rakefile
+bin/tem_multi_reset_fw
 bin/tem_multi_update_fw
 lib/tem_multi_updater.rb
 lib/tem_multi_updater/updater.rb

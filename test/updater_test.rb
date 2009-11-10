@@ -26,6 +26,13 @@ class UpdaterTest < Test::Unit::TestCase
     super
   end
   
+  def test_reset_switch
+    updater = Tem::MultiUpdater::Updater.new Logger.new(StringIO.new),
+                                             @server_addr, :force => true
+    flexmock(Tem::Session).should_receive(:new).never
+    assert_equal true, updater.needs_update?(:bogus_transport)
+  end
+  
   def test_dead_proxy
     flexmock(Tem::MultiProxy::Client).should_receive(:query_tems).
         with(@server_addr).and_return(nil)
