@@ -112,9 +112,21 @@ class Updater
     @logger.info "Uploading TEM firmware to #{transport.inspect}"
     begin
       Tem::Firmware::Uploader.upload_cap transport
-      return true
     rescue Exception => e
       @logger.error "Error while uploading TEM firmware to " +
+                    "#{transport.inspect} - #{e.class.name}: #{e.message}"
+      @logger.info e.backtrace.join("\n")
+      return false
+    end
+
+    @logger.info "Emitting TEM at #{transport.inspect}"
+    begin
+      tem = Tem::Session.new transport
+      tem.activate
+      tem.emit
+      return true
+    rescue Exception => e
+      @logger.error "Error while emitting TEM at " +
                     "#{transport.inspect} - #{e.class.name}: #{e.message}"
       @logger.info e.backtrace.join("\n")
       return false

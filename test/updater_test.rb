@@ -68,6 +68,12 @@ class UpdaterTest < Test::Unit::TestCase
                        and_return(true).once                                      
     flexmock(Tem::Firmware::Uploader).should_receive(:upload_cap).
                                       with(:old_transport).once
+  
+    session = Object.new    
+    flexmock(Tem::Session).should_receive(:new).with(:old_transport).
+                           and_return(session).once
+    flexmock(session).should_receive(:activate).and_return(true).once
+    flexmock(session).should_receive(:emit).and_return([]).once    
     assert_equal true, @updater.update_transport(:old_transport),
                  'Outdated smartcard'
 
@@ -107,7 +113,7 @@ class UpdaterTest < Test::Unit::TestCase
      [{:major => fw_version[:major], :minor => fw_version[:minor] + 1}, false],
      [{:data => [], :status => 0x6A88}, true],
     ].each do |test_case|
-      _test_needs_update *test_case
+      _test_needs_update(*test_case)
     end
   end
 end

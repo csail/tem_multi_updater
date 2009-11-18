@@ -1,3 +1,5 @@
+v0.4. Updating TEMs also emits them.
+
 v0.3. Added tem_multi_reset_fw which forces the update, resetting the TEM cards.
 
 v0.2. Complete test coverage.
